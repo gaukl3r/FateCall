@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoW: Forever Main Randomizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0b0e;
+            --card-bg: linear-gradient(160deg, #161821 0%, #0d0e14 100%);
+            --modal-bg: #12141d;
+            --border-gold: #c89b3c;
+            --text-gold: #f0c665;
+            --alliance-blue: #2563eb;
+            --alliance-glow: rgba(37, 99, 235, 0.4);
+            --horde-red: #dc2626;
+            --horde-glow: rgba(220, 38, 38, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 15%, rgba(200, 155, 60, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 85%, rgba(15, 23, 42, 0.6) 0%, transparent 60%);
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border: 2px solid var(--border-gold);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(200, 155, 60, 0.15);
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: var(--text-gold);
+            font-size: 1.9rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 10px rgba(240, 198, 101, 0.3);
+            margin-bottom: 4px;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+
+        /* Filter Bar & Modal Trigger */
+        .filter-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .faction-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 8px 0;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .tab-btn:hover { color: #f1f5f9; }
+
+        .tab-btn.active.any {
+            background: rgba(240, 198, 101, 0.15);
+            color: var(--text-gold);
+        }
+
+        .tab-btn.active.alliance {
+            background: var(--alliance-blue);
+            color: #fff;
+            box-shadow: 0 0 12px var(--alliance-glow);
+        }
+
+        .tab-btn.active.horde {
+            background: var(--horde-red);
+            color: #fff;
+            box-shadow: 0 0 12px var(--horde-glow);
+        }
+
+        .filter-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(200, 155, 60, 0.2);
+            border-radius: 8px;
+            padding: 8px 14px;
+        }
+
+        .pool-count-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+
+        .pool-count-badge span {
+            color: var(--text-gold);
+        }
+
+        .btn-modal-open {
+            background: rgba(200, 155, 60, 0.15);
+            border: 1px solid var(--border-gold);
+            color: var(--text-gold);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-modal-open:hover {
+            background: rgba(200, 155, 60, 0.3);
+            transform: scale(1.02);
+        }
+
+        /* Result Display Card */
+        .result-card {
+            background: rgba(10, 11, 14, 0.85);
+            border: 1px solid rgba(200, 155, 60, 0.25);
+            border-radius: 12px;
+            padding: 24px 16px;
+            margin-bottom: 20px;
+            min-height: 185px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .faction-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+        }
+
+        .faction-badge.Alliance {
+            color: #60a5fa;
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.4);
+        }
+
+        .faction-badge.Horde {
+            color: #f87171;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+        }
+
+        .role-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .race-title {
+            font-size: 1.15rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .class-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.3rem;
+            font-weight: 900;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        .racial-perk {
+            font-size: 0.75rem;
+            color: var(--text-gold);
+            margin-top: 8px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        /* Action Controls */
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 48px;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        button.roll-button {
+            background: linear-gradient(180deg, #c89b3c 0%, #997122 100%);
+            color: #0d0e14;
+            border: 1px solid #f0c665;
+            padding: 14px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.05rem;
+            font-weight: 900;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 6px 20px rgba(200, 155, 60, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        button.roll-button:hover {
+            background: linear-gradient(180deg, #dbab48 0%, #ad8129 100%);
+            transform: translateY(-1px);
+        }
+
+        button.share-button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        button.share-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* History Section */
+        .history-box {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .history-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .history-item {
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            border: 2px solid var(--border-gold);
+            border-radius: 14px;
+            width: 90%;
+            max-width: 580px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(200, 155, 60, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            color: var(--text-gold);
+            text-transform: uppercase;
+        }
+
+        .btn-modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-modal-close:hover { color: #fff; }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+        }
+
+        .filter-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .filter-group-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            color: var(--text-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quick-select-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .quick-btn:hover { color: #cbd5e1; }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .custom-checkbox input[type="checkbox"] {
+            accent-color: var(--border-gold);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(200, 155, 60, 0.2);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-apply {
+            background: linear-gradient(180deg, #c89b3c 0%, #997122 100%);
+            color: #0d0e14;
+            border: 1px solid #f0c665;
+            padding: 8px 20px;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Official Class Colors */
+        .Warrior { color: #C69B6D; }
+        .Paladin { color: #F58CBA; }
+        .Hunter  { color: #AAD372; }
+        .Shaman  { color: #0070DD; }
+        .Druid   { color: #FF7C0A; }
+        .Rogue   { color: #FFF468; }
+        .Priest  { color: #FFFFFF; }
+        .Mage    { color: #3FC7EB; }
+        .Warlock { color: #8788EE; }
+
+        /* Custom Scrollbar */
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--border-gold);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fate Call</h1>
+    <p class="subtitle">WoW: Forever Main Randomizer</p>
+
+    <!-- Filters -->
+    <div class="filter-row">
+        <div class="faction-tabs">
+            <button class="tab-btn active any" id="btnAny">Any</button>
+            <button class="tab-btn alliance" id="btnAlliance">Alliance</button>
+            <button class="tab-btn horde" id="btnHorde">Horde</button>
+        </div>
+
+        <div class="filter-summary-row">
+            <div class="pool-count-badge">
+                Active Pool: <span id="poolCountText">0</span> possibilities
+            </div>
+            <button class="btn-modal-open" id="openModalBtn">⚙ Custom Filter</button>
+        </div>
+    </div>
+
+    <!-- Main Output -->
+    <div class="result-card">
+        <div id="factionBadge" class="faction-badge">Press Roll or Space</div>
+        <div id="roleText" class="role-title">---</div>
+        <div id="raceText" class="race-title"></div>
+        <div id="classText" class="class-title">???</div>
+        <div id="perkText" class="racial-perk"></div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-row">
+        <button class="roll-button" id="rollBtn">Choose My Fate</button>
+        <button class="share-button" id="shareBtn" title="Copy Result">📋</button>
+    </div>
+
+    <!-- History Bar -->
+    <div class="history-box">
+        <div class="history-title">Recent Rolls</div>
+        <div id="historyList" class="history-list">
+            <div class="history-item" style="color:#64748b;">No recent rolls yet...</div>
+        </div>
+    </div>
+</div>
+
+<!-- SELECTION MODAL -->
+<div class="modal-overlay" id="filterModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Include in Roll Matrix</h2>
+            <button class="btn-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            
+            <!-- Roles Filter -->
+            <div>
+                <div class="filter-group-header">
+                    <span class="filter-group-title">Roles</span>
+                    <div class="quick-select-btns">
+                        <button class="quick-btn" onclick="toggleCategory('roles', true)">Select All</button>
+                        <button class="quick-btn" onclick="toggleCategory('roles', false)">Unselect All</button>
+                    </div>
+                </div>
+                <div class="checkbox-grid" id="rolesGrid"></div>
+            </div>
+
+            <!-- Classes Filter -->
+            <div>
+                <div class="filter-group-header">
+                    <span class="filter-group-title">Classes</span>
+                    <div class="quick-select-btns">
+                        <button class="quick-btn" onclick="toggleCategory('classes', true)">Select All</button>
+                        <button class="quick-btn" onclick="toggleCategory('classes', false)">Unselect All</button>
+                    </div>
+                </div>
+                <div class="checkbox-grid" id="classesGrid"></div>
+            </div>
+
+            <!-- Races Filter -->
+            <div>
+                <div class="filter-group-header">
+                    <span class="filter-group-title">Races</span>
+                    <div class="quick-select-btns">
+                        <button class="quick-btn" onclick="toggleCategory('races', true)">Select All</button>
+                        <button class="quick-btn" onclick="toggleCategory('races', false)">Unselect All</button>
+                    </div>
+                </div>
+                <div class="checkbox-grid" id="racesGrid"></div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-apply" id="applyModalBtn">Save & Apply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const RACIAL_TRAITS = {
+            'Human': 'Ruthless (+2% Crit) & The Human Spirit (+5% Spirit)',
+            'Dwarf': 'Stoneform (-10% Phys Dmg) & Earth Fury (+2% Crit Dmg/Heal)',
+            'Night Elf': 'Shadowmeld & Quickness (+2% Speed)',
+            'Gnome': 'Eureka! (-10% Cost / +10% Dmg) & Expansive Mind (+5% Resource)',
+            'Skyborne (High Order)': 'Read Ley Line & Wind Blessed (+3% Haste)',
+            'Skyborne (Windshaper)': 'Skysight (+10% Speed) & Wind Blessed (+3% Haste)',
+            'Orc': 'Blood Fury (+10% AP/SP) & Shatter Curse',
+            'Tauren': 'War Stomp & Endurance (+5% HP, +2% Crit Dmg/Heal)',
+            'Troll': 'Berserking (+10% Haste) & Beast Slaying (+5% Dmg)',
+            'Undead': 'Will of the Forsaken & Cannibalize'
+        };
+
+        // Strictly Audited Race-Class Matrix according to WoW: Forever
+        const FOREVER_MATRIX = [
+            // ALLIANCE TANKS
+            { faction: 'Alliance', race: 'Human', class: 'Warrior', role: 'Tank' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Warrior', role: 'Tank' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Warrior', role: 'Tank' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Warrior', role: 'Tank' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Warrior', role: 'Tank' },
+            { faction: 'Alliance', race: 'Human', class: 'Paladin', role: 'Tank' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Paladin', role: 'Tank' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Druid', role: 'Tank' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Druid', role: 'Tank' },
+
+            // ALLIANCE HEALERS
+            { faction: 'Alliance', race: 'Human', class: 'Priest', role: 'Heal' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Priest', role: 'Heal' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Priest', role: 'Heal' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Priest', role: 'Heal' },
+            { faction: 'Alliance', race: 'Human', class: 'Paladin', role: 'Heal' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Paladin', role: 'Heal' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Druid', role: 'Heal' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Druid', role: 'Heal' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Shaman', role: 'Heal' },
+
+            // ALLIANCE DPS
+            { faction: 'Alliance', race: 'Human', class: 'Warrior', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Warrior', role: 'DPS' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Warrior', role: 'DPS' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Warrior', role: 'DPS' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Warrior', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Paladin', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Paladin', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Hunter', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Hunter', role: 'DPS' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Hunter', role: 'DPS' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Hunter', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Rogue', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Rogue', role: 'DPS' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Rogue', role: 'DPS' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Rogue', role: 'DPS' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Rogue', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Mage', role: 'DPS' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Mage', role: 'DPS' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Mage', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Warlock', role: 'DPS' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Warlock', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Shaman', role: 'DPS' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Druid', role: 'DPS' },
+            { faction: 'Alliance', race: 'Skyborne (High Order)', class: 'Druid', role: 'DPS' },
+            { faction: 'Alliance', race: 'Human', class: 'Priest', role: 'DPS' },
+            { faction: 'Alliance', race: 'Dwarf', class: 'Priest', role: 'DPS' },
+            { faction: 'Alliance', race: 'Night Elf', class: 'Priest', role: 'DPS' },
+            { faction: 'Alliance', race: 'Gnome', class: 'Priest', role: 'DPS' },
+
+            // HORDE TANKS
+            { faction: 'Horde', race: 'Orc', class: 'Warrior', role: 'Tank' },
+            { faction: 'Horde', race: 'Tauren', class: 'Warrior', role: 'Tank' },
+            { faction: 'Horde', race: 'Troll', class: 'Warrior', role: 'Tank' },
+            { faction: 'Horde', race: 'Undead', class: 'Warrior', role: 'Tank' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Warrior', role: 'Tank' },
+            { faction: 'Horde', race: 'Undead', class: 'Paladin', role: 'Tank' },
+            { faction: 'Horde', race: 'Tauren', class: 'Druid', role: 'Tank' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Druid', role: 'Tank' },
+
+            // HORDE HEALERS
+            { faction: 'Horde', race: 'Undead', class: 'Priest', role: 'Heal' },
+            { faction: 'Horde', race: 'Troll', class: 'Priest', role: 'Heal' },
+            { faction: 'Horde', race: 'Undead', class: 'Paladin', role: 'Heal' },
+            { faction: 'Horde', race: 'Tauren', class: 'Druid', role: 'Heal' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Druid', role: 'Heal' },
+            { faction: 'Horde', race: 'Orc', class: 'Shaman', role: 'Heal' },
+            { faction: 'Horde', race: 'Tauren', class: 'Shaman', role: 'Heal' },
+            { faction: 'Horde', race: 'Troll', class: 'Shaman', role: 'Heal' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Shaman', role: 'Heal' },
+
+            // HORDE DPS
+            { faction: 'Horde', race: 'Orc', class: 'Warrior', role: 'DPS' },
+            { faction: 'Horde', race: 'Tauren', class: 'Warrior', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Warrior', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Warrior', role: 'DPS' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Warrior', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Paladin', role: 'DPS' },
+            { faction: 'Horde', race: 'Orc', class: 'Hunter', role: 'DPS' },
+            { faction: 'Horde', race: 'Tauren', class: 'Hunter', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Hunter', role: 'DPS' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Hunter', role: 'DPS' },
+            { faction: 'Horde', race: 'Orc', class: 'Rogue', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Rogue', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Rogue', role: 'DPS' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Rogue', role: 'DPS' },
+            { faction: 'Horde', race: 'Orc', class: 'Mage', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Mage', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Mage', role: 'DPS' },
+            { faction: 'Horde', race: 'Orc', class: 'Warlock', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Warlock', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Warlock', role: 'DPS' },
+            { faction: 'Horde', race: 'Orc', class: 'Shaman', role: 'DPS' },
+            { faction: 'Horde', race: 'Tauren', class: 'Shaman', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Shaman', role: 'DPS' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Shaman', role: 'DPS' },
+            { faction: 'Horde', race: 'Tauren', class: 'Druid', role: 'DPS' },
+            { faction: 'Horde', race: 'Skyborne (Windshaper)', class: 'Druid', role: 'DPS' },
+            { faction: 'Horde', race: 'Undead', class: 'Priest', role: 'DPS' },
+            { faction: 'Horde', race: 'Troll', class: 'Priest', role: 'DPS' }
+        ];
+
+        // Unique lists for checkboxes
+        const ALL_ROLES = [...new Set(FOREVER_MATRIX.map(i => i.role))];
+        const ALL_CLASSES = [...new Set(FOREVER_MATRIX.map(i => i.class))];
+        const ALL_RACES = [...new Set(FOREVER_MATRIX.map(i => i.race))];
+
+        // Active State Selection Sets
+        let activeRoles = new Set(ALL_ROLES);
+        let activeClasses = new Set(ALL_CLASSES);
+        let activeRaces = new Set(ALL_RACES);
+        let selectedFaction = 'Any';
+
+        let isRolling = false;
+        let lastPick = null;
+        let audioCtx = null;
+        const history = [];
+
+        // Build Checkboxes inside Modal
+        function buildFilterUI() {
+            const createCheckboxes = (containerId, items, activeSet, category) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = items.map(item => `
+                    <label class="custom-checkbox">
+                        <input type="checkbox" value="${item}" data-category="${category}" ${activeSet.has(item) ? 'checked' : ''}>
+                        <span class="${ALL_CLASSES.includes(item) ? item : ''}">${item}</span>
+                    </label>
+                `).join('');
+            };
+
+            createCheckboxes('rolesGrid', ALL_ROLES, activeRoles, 'roles');
+            createCheckboxes('classesGrid', ALL_CLASSES, activeClasses, 'classes');
+            createCheckboxes('racesGrid', ALL_RACES, activeRaces, 'races');
+        }
+
+        window.toggleCategory = function(category, state) {
+            const checkboxes = document.querySelectorAll(`input[data-category="${category}"]`);
+            checkboxes.forEach(cb => cb.checked = state);
+        };
+
+        function saveFiltersFromModal() {
+            activeRoles.clear();
+            activeClasses.clear();
+            activeRaces.clear();
+
+            document.querySelectorAll('input[data-category="roles"]:checked').forEach(cb => activeRoles.add(cb.value));
+            document.querySelectorAll('input[data-category="classes"]:checked').forEach(cb => activeClasses.add(cb.value));
+            document.querySelectorAll('input[data-category="races"]:checked').forEach(cb => activeRaces.add(cb.value));
+
+            updatePoolCount();
+        }
+
+        function getActivePool() {
+            return FOREVER_MATRIX.filter(item => 
+                (selectedFaction === 'Any' || item.faction === selectedFaction) &&
+                activeRoles.has(item.role) &&
+                activeClasses.has(item.class) &&
+                activeRaces.has(item.race)
+            );
+        }
+
+        function updatePoolCount() {
+            const pool = getActivePool();
+            document.getElementById('poolCountText').innerText = pool.length;
+        }
+
+        // Faction Selection Tabs
+        document.getElementById('btnAny').addEventListener('click', (e) => setFaction('Any', e.target));
+        document.getElementById('btnAlliance').addEventListener('click', (e) => setFaction('Alliance', e.target));
+        document.getElementById('btnHorde').addEventListener('click', (e) => setFaction('Horde', e.target));
+
+        function setFaction(faction, element) {
+            selectedFaction = faction;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = 'tab-btn');
+            element.classList.add('active', faction.toLowerCase());
+            updatePoolCount();
+        }
+
+        // Modal Open/Close Controls
+        const filterModal = document.getElementById('filterModal');
+        document.getElementById('openModalBtn').addEventListener('click', () => {
+            buildFilterUI();
+            filterModal.classList.add('active');
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            filterModal.classList.remove('active');
+        });
+
+        document.getElementById('applyModalBtn').addEventListener('click', () => {
+            saveFiltersFromModal();
+            filterModal.classList.remove('active');
+        });
+
+        // Audio Generator
+        function playClickSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch(e) {}
+        }
+
+        // Main Roll Logic
+        function rollCharacter() {
+            if (isRolling) return;
+
+            const pool = getActivePool();
+
+            const factionElem = document.getElementById('factionBadge');
+            const roleElem = document.getElementById('roleText');
+            const raceElem = document.getElementById('raceText');
+            const classElem = document.getElementById('classText');
+            const perkElem = document.getElementById('perkText');
+
+            if (pool.length === 0) {
+                factionElem.innerText = 'Notice';
+                factionElem.className = 'faction-badge';
+                roleElem.innerText = 'No Matches';
+                raceElem.innerText = 'Adjust Custom Filters';
+                classElem.innerText = '---';
+                classElem.className = 'class-title';
+                perkElem.innerText = '';
+                return;
+            }
+
+            isRolling = true;
+            let ticks = 0;
+            const maxTicks = 14;
+
+            const shuffle = setInterval(() => {
+                const randomPick = pool[Math.floor(Math.random() * pool.length)];
+
+                factionElem.innerText = randomPick.faction;
+                factionElem.className = 'faction-badge ' + randomPick.faction;
+                roleElem.innerText = randomPick.role;
+                raceElem.innerText = randomPick.race;
+                classElem.innerText = randomPick.class;
+                classElem.className = 'class-title ' + randomPick.class;
+                perkElem.innerText = RACIAL_TRAITS[randomPick.race] || '';
+
+                playClickSound();
+
+                ticks++;
+                if (ticks >= maxTicks) {
+                    clearInterval(shuffle);
+                    isRolling = false;
+                    lastPick = randomPick;
+                    pushHistory(randomPick);
+                }
+            }, 45);
+        }
+
+        function pushHistory(pick) {
+            history.unshift(pick);
+            if (history.length > 4) history.pop();
+
+            const historyContainer = document.getElementById('historyList');
+            historyContainer.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <span>${item.faction} ${item.race}</span>
+                    <span class="${item.class}" style="font-weight:700;">${item.class}</span>
+                    <span style="color:#64748b;">${item.role}</span>
+                </div>
+            `).join('');
+        }
+
+        function copyResult() {
+            if (!lastPick) return;
+            const text = `I rolled a ${lastPick.faction} ${lastPick.race} ${lastPick.class} (${lastPick.role}) for WoW: Forever!`;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text);
+                alert('Copied to clipboard!');
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Copied to clipboard!');
+            }
+        }
+
+        // Keybindings & Action Handlers
+        document.getElementById('rollBtn').addEventListener('click', rollCharacter);
+        document.getElementById('shareBtn').addEventListener('click', copyResult);
+
+        document.addEventListener('keydown', (e) => {
+            if (filterModal.classList.contains('active')) return;
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                rollCharacter();
+            }
+        });
+
+        // Initialize display
+        buildFilterUI();
+        updatePoolCount();
+    });
+</script>
+
+</body>
+</html>
